@@ -84,19 +84,21 @@ app.get('/api/pesticides', async (req, res) => {
     }
 });
 
-// Route for nutrition information
+// Add this new route after your pesticides route
 app.get('/api/nutrition', async (req, res) => {
     try {
         const sheets = await getAuthenticatedSheets();
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
-            range: 'Nutrition!A1:B'
+            range: 'Nutrition!A1:B'  // Make sure your Nutrition sheet has this data
         });
+
         const rows = response.data.values || [];
         const nutritionData = rows.map(row => ({
             name: row[0] || '',
             description: row[1] || ''
         }));
+
         res.json(nutritionData);
     } catch (error) {
         console.error('Error fetching nutrition data:', error);
