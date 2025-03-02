@@ -148,8 +148,7 @@ function renderItemsList(items) {
         }
     });
 }
-
-// Fetch nutrition data
+// Add this function to fetch and display nutrition data
 function fetchNutritionData() {
     fetch('/api/nutrition')
         .then(response => response.json())
@@ -160,6 +159,23 @@ function fetchNutritionData() {
             console.error('Error fetching nutrition data:', error);
         });
 }
+
+function displayNutritionData(data) {
+    const nutritionElement = document.getElementById('nutrition-data');
+    nutritionElement.innerHTML = data.map(item => `
+        <div class="nutrition-item">
+            <h3>${item.name}</h3>
+            <p>${item.description}</p>
+        </div>
+    `).join('');
+}
+
+// Add this to your init() function
+function init() {
+    // ... your existing init code ...
+    fetchNutritionData();  // Fetch nutrition data when the app loads
+}
+
 
 // Display nutrition data
 function displayNutritionData(data) {
