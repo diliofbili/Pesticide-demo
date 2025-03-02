@@ -1,15 +1,14 @@
 {
-    "name": "pesticide-calculator",
-    "version": "1.0.0",
-    "description": "Pesticide Calculator web application",
-    "main": "server.js",
-    "scripts": {
-        "start": "node server.js"
-    },
-    "dependencies": {
-        "express": "^4.21.2",
-        "googleapis": "^92.0.0"
-        "express-rate-limit": "^6.7.0"
-    }
-    
+  "name": "pesticide-calculator",
+  "version": "1.0.0",
+  "description": "Pesticide Calculator web application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "googleapis": "^92.0.0",
+    "express-rate-limit": "^7.5.0"
+  }
 }
