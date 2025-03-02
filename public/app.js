@@ -17,8 +17,11 @@ function init() {
     // Set up cart click handler for modal view
     setupCartClickHandler();
     
-    // Fetch data
+    // Fetch pesticide data
     fetchPesticideData();
+    
+    // Fetch nutrition data
+    fetchNutritionData();
 }
 
 // Set up cart click handler for modal view
@@ -55,10 +58,12 @@ function handleScroll() {
     if (isScrollingDown && scrollPosition > cartThreshold && !isCartFloating && selectedItems.length > 0) {
         // Scrolling down past threshold - make cart float
         selectedItemsContainer.classList.add('floating-cart');
+        selectedItemsContainer.style.top = '80px';
         isCartFloating = true;
     } else if ((!isScrollingDown && scrollPosition < cartThreshold) || selectedItems.length === 0) {
         // Scrolling up to top or cart is empty - restore normal position
         selectedItemsContainer.classList.remove('floating-cart');
+        selectedItemsContainer.style.top = 'auto';
         isCartFloating = false;
     }
 }
@@ -110,7 +115,7 @@ function renderItemsList(items) {
             const itemElement = document.createElement('div');
             itemElement.className = 'item';
             itemElement.setAttribute('data-index', index); 
-            itemElement.innerHTML = `
+            itemElement.innerHTML = ` 
                 <div class="item-info">
                     <div class="item-name">
                         ${item.name} 
@@ -144,6 +149,29 @@ function renderItemsList(items) {
     });
 }
 
+// Fetch nutrition data
+function fetchNutritionData() {
+    fetch('/api/nutrition')
+        .then(response => response.json())
+        .then(data => {
+            displayNutritionData(data);
+        })
+        .catch(error => {
+            console.error('Error fetching nutrition data:', error);
+        });
+}
+
+// Display nutrition data
+function displayNutritionData(data) {
+    const nutritionElement = document.getElementById('nutrition-data');
+    nutritionElement.innerHTML = data.map(item => `
+        <div class="nutrition-item">
+            <h3>${item.name}</h3>
+            <p>${item.description}</p>
+        </div>
+    `).join('');
+}
+
 // Show floating cart when item added
 function showFloatingCartOnAdd() {
     const selectedItemsContainer = document.querySelector('.selected-items-container');
@@ -153,7 +181,7 @@ function showFloatingCartOnAdd() {
         selectedItemsContainer.classList.add('floating-cart');
         isCartFloating = true;
         
-        // Hide floating cart after 5 seconds if no more items added
+        // Auto-hide after 5 seconds if no more items added
         clearTimeout(window.floatingCartTimeout);
         window.floatingCartTimeout = setTimeout(() => {
             if (isCartFloating && !document.querySelector('.selected-items-container:hover')) {
@@ -313,7 +341,7 @@ function updateSelectedItemsList() {
         itemElement.className = 'selected-item';
         
         // Ultra compact single-line layout
-        itemElement.innerHTML = `
+        itemElement.innerHTML = ` 
             <span class="selected-item-name">${idx + 1}) ${item.name}</span>
             <div class="selected-item-controls">
                 <button class="quantity-btn decrease-selected" data-index="${item.index}">-</button>
@@ -503,281 +531,4 @@ function editQuantity(index) {
 
 // Improved floating cart management for mobile
 function showFloatingCartOnAdd() {
-    const selectedItemsContainer = document.querySelector('.selected-items-container');
-    
-    // Only show floating cart if we've scrolled down enough
-    if (window.scrollY > 100 && selectedItems.length > 0) {
-        // Add floating cart class
-        selectedItemsContainer.classList.add('floating-cart');
-        isCartFloating = true;
-        
-        // On mobile, add a touch handler to allow dismissing with swipe
-        if (window.innerWidth <= 600) {
-            setupSwipeDismiss(selectedItemsContainer);
-        }
-        
-        // Auto-hide after inactivity (except on mobile)
-        if (window.innerWidth > 600) {
-            setupAutoHide();
-        }
-    }
-}
-
-// Auto-hide the cart after inactivity
-function setupAutoHide() {
-    clearTimeout(window.floatingCartTimeout);
-    
-    window.floatingCartTimeout = setTimeout(() => {
-        const selectedItemsContainer = document.querySelector('.selected-items-container');
-        
-        if (isCartFloating && !selectedItemsContainer.matches(':hover')) {
-            selectedItemsContainer.classList.add('floating-cart-fade');
-            
-            setTimeout(() => {
-                selectedItemsContainer.classList.remove('floating-cart');
-                selectedItemsContainer.classList.remove('floating-cart-fade');
-                isCartFloating = false;
-            }, 500);
-        }
-    }, 5000);
-}
-
-// Allow dismissing the cart with swipe on mobile
-function setupSwipeDismiss(element) {
-    let touchStartY = 0;
-    let touchMoveY = 0;
-    
-    // Touch start handler
-    element.addEventListener('touchstart', function(e) {
-        touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-    
-    // Touch move handler
-    element.addEventListener('touchmove', function(e) {
-        touchMoveY = e.touches[0].clientY;
-        const diff = touchMoveY - touchStartY;
-        
-        // If swiping down, move the cart
-        if (diff > 0) {
-            element.style.transform = `translateY(${diff}px)`;
-            e.preventDefault();
-        }
-    }, { passive: false });
-    
-    // Touch end handler
-    element.addEventListener('touchend', function() {
-        const diff = touchMoveY - touchStartY;
-        
-        // If swipe was significant, dismiss the cart
-        if (diff > 80) {
-            element.style.transition = 'transform 0.3s ease';
-            element.style.transform = 'translateY(100%)';
-            
-            setTimeout(() => {
-                element.classList.remove('floating-cart');
-                element.style.transform = '';
-                element.style.transition = '';
-                isCartFloating = false;
-            }, 300);
-        } else {
-            // Reset position
-            element.style.transition = 'transform 0.3s ease';
-            element.style.transform = '';
-            
-            setTimeout(() => {
-                element.style.transition = '';
-            }, 300);
-        }
-    }, { passive: true });
-}
-
-// Function to show the modal cart
-function showModalCart() {
-    // Only create the modal if it doesn't exist
-    if (!document.querySelector('.cart-modal-overlay')) {
-        createModalCart();
-    }
-    
-    // Show the modal with animation
-    const overlay = document.querySelector('.cart-modal-overlay');
-    const modal = document.querySelector('.cart-modal');
-    
-    overlay.classList.add('active');
-    setTimeout(() => {
-        modal.classList.add('active');
-    }, 50);
-    
-    // Prevent body scrolling while modal is open
-    document.body.style.overflow = 'hidden';
-}
-
-// Function to hide the modal cart
-function hideModalCart() {
-    const overlay = document.querySelector('.cart-modal-overlay');
-    const modal = document.querySelector('.cart-modal');
-    
-    if (!overlay || !modal) return;
-    
-    modal.classList.remove('active');
-    
-    setTimeout(() => {
-        overlay.classList.remove('active');
-        // Re-enable body scrolling
-        document.body.style.overflow = '';
-    }, 300);
-}
-
-// Function to create the modal cart DOM elements
-function createModalCart() {
-    // Create overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'cart-modal-overlay';
-    
-    // Create modal container
-    const modal = document.createElement('div');
-    modal.className = 'cart-modal';
-    
-    // Create modal header
-    const header = document.createElement('div');
-    header.className = 'cart-modal-header';
-    
-    const title = document.createElement('div');
-    title.className = 'cart-modal-title';
-    title.textContent = 'Your Cart';
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'cart-modal-close';
-    closeBtn.innerHTML = '&times;';
-    closeBtn.addEventListener('click', hideModalCart);
-    
-    header.appendChild(title);
-    header.appendChild(closeBtn);
-    
-    // Create modal body
-    const body = document.createElement('div');
-    body.className = 'cart-modal-body';
-    body.id = 'modal-cart-items';
-    
-    // Create modal footer
-    const footer = document.createElement('div');
-    footer.className = 'cart-modal-footer';
-    
-    const clearBtn = document.createElement('button');
-    clearBtn.className = 'clear-cart-btn';
-    clearBtn.textContent = 'Clear Cart';
-    clearBtn.addEventListener('click', () => {
-        clearCart();
-        hideModalCart();
-    });
-    
-    const total = document.createElement('div');
-    total.className = 'modal-cart-total';
-    total.innerHTML = `Grand Total = ₹<span id="modal-grand-total-value">0</span>`;
-    
-    footer.appendChild(clearBtn);
-    footer.appendChild(total);
-    
-    // Assemble the modal
-    modal.appendChild(header);
-    modal.appendChild(body);
-    modal.appendChild(footer);
-    
-    overlay.appendChild(modal);
-    
-    // Add click handler to close when clicking outside the modal
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) {
-            hideModalCart();
-        }
-    });
-    
-    // Add to the DOM
-    document.body.appendChild(overlay);
-    
-    // Populate with current cart items
-    updateModalCartItems();
-}
-
-// Function to update the items in the modal cart
-function updateModalCartItems() {
-    const modalCartItems = document.getElementById('modal-cart-items');
-    const modalGrandTotal = document.getElementById('modal-grand-total-value');
-    
-    if (!modalCartItems || !modalGrandTotal) return;
-    
-    modalCartItems.innerHTML = '';
-    
-    let grandTotal = 0;
-    
-    // Check if there are any items
-    if (selectedItems.length === 0) {
-        modalCartItems.innerHTML = '<p class="no-items">No items selected</p>';
-        modalGrandTotal.textContent = '0';
-        return;
-    }
-    
-    // Loop through all selected items
-    selectedItems.forEach((item, idx) => {
-        const total = item.price * item.quantity;
-        grandTotal += total;
-        
-        const itemElement = document.createElement('div');
-        itemElement.className = 'modal-cart-item';
-        
-        // Full details layout
-        itemElement.innerHTML = `
-            <div class="modal-cart-item-header">
-                <div class="modal-cart-item-name">${idx + 1}) ${item.name}</div>
-                <button class="remove-item-btn" data-index="${item.index}"><i class="fas fa-trash"></i></button>
-            </div>
-            <div class="modal-cart-item-details">
-                <div class="modal-cart-item-controls">
-                    <button class="quantity-btn decrease-selected" data-index="${item.index}">-</button>
-                    <span class="cart-quantity" data-index="${item.index}">${item.quantity}</span>
-                    <button class="quantity-btn increase-selected" data-index="${item.index}">+</button>
-                    <span class="item-price-display">×${item.price}</span>
-                </div>
-                <span class="modal-cart-item-price">₹${total}</span>
-            </div>
-        `;
-        
-        modalCartItems.appendChild(itemElement);
-        
-        // Add event listeners
-        const increaseBtn = itemElement.querySelector('.increase-selected');
-        const decreaseBtn = itemElement.querySelector('.decrease-selected');
-        const removeBtn = itemElement.querySelector('.remove-item-btn');
-        const qtyDisplay = itemElement.querySelector('.cart-quantity');
-        
-        increaseBtn.addEventListener('click', () => {
-            increaseQuantity(item.index);
-            updateModalCartItems(); // Update modal cart after change
-        });
-        
-        decreaseBtn.addEventListener('click', () => {
-            decreaseQuantity(item.index);
-            updateModalCartItems(); // Update modal cart after change
-        });
-        
-        removeBtn.addEventListener('click', () => {
-            removeItem(item.index);
-            updateModalCartItems(); // Update modal cart after change
-            
-            // If no items left, close the modal
-            if (selectedItems.length === 0) {
-                hideModalCart();
-            }
-        });
-        
-        qtyDisplay.addEventListener('click', () => {
-            editQuantity(item.index);
-            updateModalCartItems(); // Update modal cart after change
-        });
-    });
-    
-    // Update grand total
-    modalGrandTotal.textContent = grandTotal;
-}
-
-// Initialize the app when window loads
-window.onload = init;
+    const 
