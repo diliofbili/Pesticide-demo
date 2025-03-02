@@ -170,13 +170,6 @@ function displayNutritionData(data) {
     `).join('');
 }
 
-// Add this to your init() function
-function init() {
-    // ... your existing init code ...
-    fetchNutritionData();  // Fetch nutrition data when the app loads
-}
-
-
 // Display nutrition data
 function displayNutritionData(data) {
     const nutritionElement = document.getElementById('nutrition-data');
