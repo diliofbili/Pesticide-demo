@@ -1190,7 +1190,72 @@ h2 {
     color: #4CAF50;
     font-weight: bold;
 }
+.search-section {
+            position: fixed;
+            top: 10px;
+            width: 100%;
+            padding: 10px;
+            background-color: #1e1e1e;
+            z-index: 1000;
+        }
 
+        #search-input, #toggle-list-btn {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .selected-item-controls {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        .selected-item-name {
+            margin-right: 10px;
+        }
+
+        .floating-cart {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 760px;
+            max-height: 40vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .floating-cart.expanded {
+            max-height: 80vh;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .toggle-cart-btn {
+            cursor: pointer;
+            font-size: 20px;
+            margin: 0 5px;
+        }
+
+        /* Nutrition section styling */
+        .nutrition-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background-color: #252525;
+        }
+
+        
     </style>
 </head>
 <body>
@@ -1200,8 +1265,8 @@ h2 {
         </header>
         
         <div class="search-section">
-            <input type="text" id="search-input" placeholder="Search Pesticide...">
-            <button id="toggle-list-btn">Hide List</button>
+        <input type="text" id="search-input" placeholder="Search Pesticide...">
+        <button id="toggle-list-btn">Hide List</button>
         </div>
         
         <div class="selected-items-container">
@@ -1211,6 +1276,10 @@ h2 {
             </div>
             <div id="selected-items-list"></div>
             <div class="grand-total">Grand Total = ₹<span id="grand-total-value">0</span></div>
+        </div>
+        <div class="nutrition-section">
+        <h2>Nutrition Information</h2>
+        <div id="nutrition-data"></div>
         </div>
         
         <div class="all-items-container" id="all-items-container">
